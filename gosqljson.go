@@ -118,7 +118,7 @@ var QueryDbToMap = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams
 	return
 }
 
-var ExecDb = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) (int64, error) {
+var ExecDb = func(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, error) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
