@@ -39,13 +39,15 @@ func main() {
 		fmt.Println("sql.Open:", err)
 	}
 
-	a := gosqljson.QueryDbToArrayJson(db, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 7)
-	fmt.Println(a)
-	// [["0","Alicia"],["1","Brian"],["2","Cloe"],["4","Bianca"],["5","Leo"],["6","Joy"],["7","Sam"]]
+	colsTolower := true
 
-	m := gosqljson.QueryDbToMapJson(db, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 7)
+	a := gosqljson.QueryDbToArrayJson(db, "SELECT ID,NAME FROM t LIMIT ?,?", colsTolower, 0, 3)
+	fmt.Println(a)
+	// [["id","name"],["0","Alicia"],["1","Brian"],["2","Cloe"]]
+
+	m := gosqljson.QueryDbToMapJson(db, "SELECT ID,NAME FROM t LIMIT ?,?", colsTolower, 0, 3)
 	fmt.Println(m)
-	// [{"ID":"0","NAME":"Alicia"},{"ID":"1","NAME":"Brian"},{"ID":"2","NAME":"Cloe"},{"ID":"4","NAME":"Bianca"},{"ID":"5","NAME":"Leo"},{"ID":"6","NAME":"Joy"},{"ID":"7","NAME":"Sam"}]
+	// [{"id":"0","name":"Alicia"},{"id":"1","name":"Brian"},{"id":"2","name":"Cloe"}]
 
 }
 ```

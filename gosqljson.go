@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-var QueryDbToArrayJson = func(db *sql.DB, sqlStatement string, sqlParams ...interface{}) string {
-	data := QueryDbToArray(db, sqlStatement, sqlParams...)
+var QueryDbToArrayJson = func(db *sql.DB, sqlStatement string, toLower bool, sqlParams ...interface{}) string {
+	data := QueryDbToArray(db, sqlStatement, toLower, sqlParams...)
 	jsonString, err := json.Marshal(data)
 	if err != nil {
 		fmt.Println(err)
@@ -16,8 +16,8 @@ var QueryDbToArrayJson = func(db *sql.DB, sqlStatement string, sqlParams ...inte
 	return string(jsonString)
 }
 
-var QueryDbToMapJson = func(db *sql.DB, sqlStatement string, sqlParams ...interface{}) string {
-	data := QueryDbToMap(db, sqlStatement, sqlParams...)
+var QueryDbToMapJson = func(db *sql.DB, sqlStatement string, toLower bool, sqlParams ...interface{}) string {
+	data := QueryDbToMap(db, sqlStatement, toLower, sqlParams...)
 	jsonString, err := json.Marshal(data)
 	if err != nil {
 		fmt.Println(err)
@@ -25,7 +25,7 @@ var QueryDbToMapJson = func(db *sql.DB, sqlStatement string, sqlParams ...interf
 	return string(jsonString)
 }
 
-var QueryDbToArray = func(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (results [][]string) {
+var QueryDbToArray = func(db *sql.DB, sqlStatement string, toLower bool, sqlParams ...interface{}) (results [][]string) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
@@ -38,6 +38,16 @@ var QueryDbToArray = func(db *sql.DB, sqlStatement string, sqlParams ...interfac
 			fmt.Println("db.Query:", err)
 		}
 		cols, _ := rows.Columns()
+		if toLower {
+			colsLower := make([]string, len(cols))
+			for i, v := range cols {
+				colsLower[i] = strings.ToLower(v)
+			}
+			results = append(results, colsLower)
+		} else {
+			results = append(results, cols)
+		}
+
 		rawResult := make([][]byte, len(cols))
 
 		dest := make([]interface{}, len(cols)) // A temporary interface{} slice
@@ -66,7 +76,7 @@ var QueryDbToArray = func(db *sql.DB, sqlStatement string, sqlParams ...interfac
 	return
 }
 
-var QueryDbToMap = func(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (results []map[string]string) {
+var QueryDbToMap = func(db *sql.DB, sqlStatement string, toLower bool, sqlParams ...interface{}) (results []map[string]string) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
@@ -79,6 +89,12 @@ var QueryDbToMap = func(db *sql.DB, sqlStatement string, sqlParams ...interface{
 			fmt.Println("db.Query:", err)
 		}
 		cols, _ := rows.Columns()
+		colsLower := make([]string, len(cols))
+		if toLower {
+			for i, v := range cols {
+				colsLower[i] = strings.ToLower(v)
+			}
+		}
 		rawResult := make([][]byte, len(cols))
 
 		dest := make([]interface{}, len(cols)) // A temporary interface{} slice
@@ -93,7 +109,11 @@ var QueryDbToMap = func(db *sql.DB, sqlStatement string, sqlParams ...interface{
 				if raw == nil {
 					result[cols[i]] = "\\N"
 				} else {
-					result[cols[i]] = string(raw)
+					if toLower {
+						result[colsLower[i]] = string(raw)
+					} else {
+						result[cols[i]] = string(raw)
+					}
 				}
 			}
 			results = append(results, result)
