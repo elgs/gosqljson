@@ -3,6 +3,7 @@ package gosqljson
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -67,11 +68,6 @@ var QueryDbToArray = func(db *sql.DB, toLower bool, sqlStatement string, sqlPara
 			}
 			results = append(results, result)
 		}
-	} else {
-		_, err := db.Exec(sqlStatement, sqlParams...)
-		if err != nil {
-			fmt.Println(err)
-		}
 	}
 	return
 }
@@ -118,11 +114,27 @@ var QueryDbToMap = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams
 			}
 			results = append(results, result)
 		}
-	} else {
-		_, err := db.Exec(sqlStatement, sqlParams...)
-		if err != nil {
-			fmt.Println(err)
-		}
 	}
 	return
+}
+
+var ExecDb = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) (int64, error) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	sqlUpper := strings.ToUpper(sqlStatement)
+	if strings.HasPrefix(sqlUpper, "UPDATE") ||
+		strings.HasPrefix(sqlUpper, "INSERT INTO") ||
+		strings.HasPrefix(sqlUpper, "DELETE FROM") {
+		result, err := db.Exec(sqlStatement, sqlParams...)
+		if err != nil {
+			fmt.Println(err)
+			return 0, err
+		}
+		return result.RowsAffected()
+	}
+	return 0, errors.New(fmt.Sprint("Invalid SQL:", sqlStatement))
 }
