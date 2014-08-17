@@ -13,7 +13,7 @@ ID	NAME
 
 0	Alicia
 1	Brian
-2	Cloe
+2	Chloe
 4	Bianca
 5	Leo
 6	Joy
