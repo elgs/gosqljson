@@ -3,6 +3,10 @@ gosqljson
 
 A Go SQL to JSON library.
 
+#Installation
+`go get -u github.com/elgs/gosqljson`
+
+# Sample code
 ```go
 package main
 
