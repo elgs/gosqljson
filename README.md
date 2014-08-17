@@ -31,7 +31,7 @@ import (
 )
 
 func main() {
-	ds := "username:password@#@tcp(host:3306)/db"
+	ds := "username:password@tcp(host:3306)/db"
 	db, err := sql.Open("mysql", ds)
 	defer db.Close()
 
