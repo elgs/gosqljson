@@ -1,4 +1,4 @@
-package sqlgojson
+package gosqljson
 
 import (
 	"database/sql"
