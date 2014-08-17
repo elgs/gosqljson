@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-var QueryDbToArrayJson = func(db *sql.DB, sqlStatement string, toLower bool, sqlParams ...interface{}) string {
-	data := QueryDbToArray(db, sqlStatement, toLower, sqlParams...)
+var QueryDbToArrayJson = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) string {
+	data := QueryDbToArray(db, toLower, sqlStatement, sqlParams...)
 	jsonString, err := json.Marshal(data)
 	if err != nil {
 		fmt.Println(err)
@@ -16,8 +16,8 @@ var QueryDbToArrayJson = func(db *sql.DB, sqlStatement string, toLower bool, sql
 	return string(jsonString)
 }
 
-var QueryDbToMapJson = func(db *sql.DB, sqlStatement string, toLower bool, sqlParams ...interface{}) string {
-	data := QueryDbToMap(db, sqlStatement, toLower, sqlParams...)
+var QueryDbToMapJson = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) string {
+	data := QueryDbToMap(db, toLower, sqlStatement, sqlParams...)
 	jsonString, err := json.Marshal(data)
 	if err != nil {
 		fmt.Println(err)
@@ -25,7 +25,7 @@ var QueryDbToMapJson = func(db *sql.DB, sqlStatement string, toLower bool, sqlPa
 	return string(jsonString)
 }
 
-var QueryDbToArray = func(db *sql.DB, sqlStatement string, toLower bool, sqlParams ...interface{}) (results [][]string) {
+var QueryDbToArray = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) (results [][]string) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
@@ -76,7 +76,7 @@ var QueryDbToArray = func(db *sql.DB, sqlStatement string, toLower bool, sqlPara
 	return
 }
 
-var QueryDbToMap = func(db *sql.DB, sqlStatement string, toLower bool, sqlParams ...interface{}) (results []map[string]string) {
+var QueryDbToMap = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) (results []map[string]string) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
