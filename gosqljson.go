@@ -103,7 +103,7 @@ var QueryDbToMap = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams
 			rows.Scan(dest...)
 			for i, raw := range rawResult {
 				if raw == nil {
-					result[cols[i]] = "\\N"
+					result[cols[i]] = ""
 				} else {
 					if toLower {
 						result[colsLower[i]] = string(raw)
