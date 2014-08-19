@@ -8,35 +8,29 @@ import (
 	"strings"
 )
 
-var QueryDbToArrayJson = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) string {
-	data := QueryDbToArray(db, toLower, sqlStatement, sqlParams...)
+var QueryDbToArrayJson = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) (string, error) {
+	data, err := QueryDbToArray(db, toLower, sqlStatement, sqlParams...)
 	jsonString, err := json.Marshal(data)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return string(jsonString)
+	return string(jsonString), err
 }
 
-var QueryDbToMapJson = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) string {
-	data := QueryDbToMap(db, toLower, sqlStatement, sqlParams...)
+var QueryDbToMapJson = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) (string, error) {
+	data, err := QueryDbToMap(db, toLower, sqlStatement, sqlParams...)
 	jsonString, err := json.Marshal(data)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return string(jsonString)
+	return string(jsonString), err
 }
 
-var QueryDbToArray = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) (results [][]string) {
+var QueryDbToArray = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) ([][]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
 		}
 	}()
-
+	var results [][]string
 	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT") {
 		rows, err := db.Query(sqlStatement, sqlParams...)
 		if err != nil {
-			fmt.Println("db.Query:", err)
+			return results, err
 		}
 		cols, _ := rows.Columns()
 		if toLower {
@@ -69,20 +63,21 @@ var QueryDbToArray = func(db *sql.DB, toLower bool, sqlStatement string, sqlPara
 			results = append(results, result)
 		}
 	}
-	return
+	return results, nil
 }
 
-var QueryDbToMap = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) (results []map[string]string) {
+var QueryDbToMap = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...interface{}) ([]map[string]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
 		}
 	}()
 
+	var results []map[string]string
 	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT") {
 		rows, err := db.Query(sqlStatement, sqlParams...)
 		if err != nil {
-			fmt.Println("db.Query:", err)
+			return results, err
 		}
 		cols, _ := rows.Columns()
 		colsLower := make([]string, len(cols))
@@ -115,7 +110,7 @@ var QueryDbToMap = func(db *sql.DB, toLower bool, sqlStatement string, sqlParams
 			results = append(results, result)
 		}
 	}
-	return
+	return results, nil
 }
 
 var ExecDb = func(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, error) {
