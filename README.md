@@ -41,11 +41,11 @@ func main() {
 
 	colsTolower := true
 
-	a := gosqljson.QueryDbToArrayJson(db, colsTolower, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
+	a, _ := gosqljson.QueryDbToArrayJson(db, colsTolower, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
 	fmt.Println(a)
 	// [["id","name"],["0","Alicia"],["1","Brian"],["2","Chloe"]]
 
-	m := gosqljson.QueryDbToMapJson(db, colsTolower, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
+	m, _ := gosqljson.QueryDbToMapJson(db, colsTolower, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
 	fmt.Println(m)
 	// [{"id":"0","name":"Alicia"},{"id":"1","name":"Brian"},{"id":"2","name":"Chloe"}]
 
