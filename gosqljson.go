@@ -122,7 +122,7 @@ func ExecDb(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, e
 
 	sqlUpper := strings.ToUpper(sqlStatement)
 	if strings.HasPrefix(sqlUpper, "UPDATE") ||
-		strings.HasPrefix(sqlUpper, "INSERT INTO") ||
+		strings.HasPrefix(sqlUpper, "INSERT ") ||
 		strings.HasPrefix(sqlUpper, "DELETE FROM") {
 		result, err := db.Exec(sqlStatement, sqlParams...)
 		if err != nil {
