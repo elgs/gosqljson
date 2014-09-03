@@ -55,7 +55,7 @@ func QueryDbToArray(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...
 			rows.Scan(dest...)
 			for i, raw := range rawResult {
 				if raw == nil {
-					result[i] = "\\N"
+					result[i] = ""
 				} else {
 					result[i] = string(raw)
 				}
@@ -74,7 +74,7 @@ func QueryDbToMap(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...in
 	}()
 
 	var results []map[string]string
-	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT") {
+	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT ") {
 		rows, err := db.Query(sqlStatement, sqlParams...)
 		if err != nil {
 			return results, err
@@ -98,7 +98,11 @@ func QueryDbToMap(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...in
 			rows.Scan(dest...)
 			for i, raw := range rawResult {
 				if raw == nil {
-					result[cols[i]] = ""
+					if toLower {
+						result[colsLower[i]] = ""
+					} else {
+						result[cols[i]] = ""
+					}
 				} else {
 					if toLower {
 						result[colsLower[i]] = string(raw)
@@ -121,9 +125,9 @@ func ExecDb(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, e
 	}()
 
 	sqlUpper := strings.ToUpper(sqlStatement)
-	if strings.HasPrefix(sqlUpper, "UPDATE") ||
+	if strings.HasPrefix(sqlUpper, "UPDATE ") ||
 		strings.HasPrefix(sqlUpper, "INSERT ") ||
-		strings.HasPrefix(sqlUpper, "DELETE FROM") {
+		strings.HasPrefix(sqlUpper, "DELETE FROM ") {
 		result, err := db.Exec(sqlStatement, sqlParams...)
 		if err != nil {
 			fmt.Println(err)
