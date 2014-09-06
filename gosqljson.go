@@ -27,8 +27,6 @@ func QueryDbToArray(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...
 		}
 	}()
 
-	SqlSafe(&sqlStatement)
-
 	var results [][]string
 	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT") {
 		rows, err := db.Query(sqlStatement, sqlParams...)
@@ -75,8 +73,6 @@ func QueryDbToMap(db *sql.DB, toLower bool, sqlStatement string, sqlParams ...in
 			fmt.Println(err)
 		}
 	}()
-
-	SqlSafe(&sqlStatement)
 
 	var results []map[string]string
 	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT ") {
@@ -129,8 +125,6 @@ func ExecDb(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, e
 		}
 	}()
 
-	SqlSafe(&sqlStatement)
-
 	sqlUpper := strings.ToUpper(sqlStatement)
 	if strings.HasPrefix(sqlUpper, "UPDATE ") ||
 		strings.HasPrefix(sqlUpper, "INSERT ") ||
@@ -143,9 +137,4 @@ func ExecDb(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, e
 		return result.RowsAffected()
 	}
 	return 0, errors.New(fmt.Sprint("Invalid SQL:", sqlStatement))
-}
-
-func SqlSafe(s *string) {
-	*s = strings.Replace(*s, "'", "''", -1)
-	*s = strings.Replace(*s, "--", "", -1)
 }
