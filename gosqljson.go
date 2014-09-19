@@ -31,6 +31,7 @@ func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams .
 	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT") {
 		rows, err := db.Query(sqlStatement, sqlParams...)
 		if err != nil {
+			fmt.Println("Error executing: ", sqlStatement)
 			return results, err
 		}
 		cols, _ := rows.Columns()
@@ -88,6 +89,7 @@ func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...
 	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT ") {
 		rows, err := db.Query(sqlStatement, sqlParams...)
 		if err != nil {
+			fmt.Println("Error executing: ", sqlStatement)
 			return results, err
 		}
 		cols, _ := rows.Columns()
@@ -156,6 +158,7 @@ func ExecDb(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, e
 		strings.HasPrefix(sqlUpper, "DELETE FROM ") {
 		result, err := db.Exec(sqlStatement, sqlParams...)
 		if err != nil {
+			fmt.Println("Error executing: ", sqlStatement)
 			fmt.Println(err)
 			return 0, err
 		}
