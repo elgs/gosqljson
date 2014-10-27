@@ -167,6 +167,28 @@ func ExecDb(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, e
 	return 0, errors.New(fmt.Sprint("Invalid SQL:", sqlStatement))
 }
 
+func ExecTx(tx *sql.Tx, sqlStatement string, sqlParams ...interface{}) (int64, error) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	sqlUpper := strings.ToUpper(sqlStatement)
+	if strings.HasPrefix(sqlUpper, "UPDATE ") ||
+		strings.HasPrefix(sqlUpper, "INSERT ") ||
+		strings.HasPrefix(sqlUpper, "DELETE FROM ") {
+		result, err := tx.Exec(sqlStatement, sqlParams...)
+		if err != nil {
+			fmt.Println("Error executing: ", sqlStatement)
+			fmt.Println(err)
+			return 0, err
+		}
+		return result.RowsAffected()
+	}
+	return 0, errors.New(fmt.Sprint("Invalid SQL:", sqlStatement))
+}
+
 func toCamel(s string) (ret string) {
 	s = strings.ToLower(s)
 	a := strings.Split(s, "_")
