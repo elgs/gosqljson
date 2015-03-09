@@ -281,7 +281,7 @@ func ExecDb(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, e
 	if strings.HasPrefix(sqlUpper, "UPDATE ") ||
 		strings.HasPrefix(sqlUpper, "INSERT ") ||
 		strings.HasPrefix(sqlUpper, "DELETE FROM ") ||
-		strings.HasPrefix(sqlUpper, "CREATE TABLE ") {
+		strings.HasPrefix(sqlUpper, "CREATE ") {
 		result, err := db.Exec(sqlStatement, sqlParams...)
 		if err != nil {
 			fmt.Println("Error executing: ", sqlStatement)
@@ -304,7 +304,7 @@ func ExecTx(tx *sql.Tx, sqlStatement string, sqlParams ...interface{}) (int64, e
 	if strings.HasPrefix(sqlUpper, "UPDATE ") ||
 		strings.HasPrefix(sqlUpper, "INSERT ") ||
 		strings.HasPrefix(sqlUpper, "DELETE FROM ") ||
-		strings.HasPrefix(sqlUpper, "CREATE TABLE ") {
+		strings.HasPrefix(sqlUpper, "CREATE ") {
 		result, err := tx.Exec(sqlStatement, sqlParams...)
 		if err != nil {
 			fmt.Println("Error executing: ", sqlStatement)
