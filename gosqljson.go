@@ -28,7 +28,8 @@ func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams .
 	}()
 
 	var results [][]string
-	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT") {
+	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT") ||
+		strings.HasPrefix(strings.ToUpper(sqlStatement), "DESCRIBE") {
 		rows, err := db.Query(sqlStatement, sqlParams...)
 		if err != nil {
 			fmt.Println("Error executing: ", sqlStatement)
@@ -86,7 +87,8 @@ func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams .
 	}()
 
 	var results [][]string
-	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT") {
+	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT") ||
+		strings.HasPrefix(strings.ToUpper(sqlStatement), "DESCRIBE") {
 		rows, err := tx.Query(sqlStatement, sqlParams...)
 		if err != nil {
 			fmt.Println("Error executing: ", sqlStatement)
@@ -144,7 +146,8 @@ func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...
 	}()
 
 	var results []map[string]string
-	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT ") {
+	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT") ||
+		strings.HasPrefix(strings.ToUpper(sqlStatement), "DESCRIBE") {
 		rows, err := db.Query(sqlStatement, sqlParams...)
 		if err != nil {
 			fmt.Println("Error executing: ", sqlStatement)
@@ -211,7 +214,8 @@ func QueryTxToMap(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...
 	}()
 
 	var results []map[string]string
-	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT ") {
+	if strings.HasPrefix(strings.ToUpper(sqlStatement), "SELECT") ||
+		strings.HasPrefix(strings.ToUpper(sqlStatement), "DESCRIBE") {
 		rows, err := tx.Query(sqlStatement, sqlParams...)
 		if err != nil {
 			fmt.Println("Error executing: ", sqlStatement)
@@ -278,10 +282,10 @@ func ExecDb(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, e
 	}()
 
 	sqlUpper := strings.ToUpper(sqlStatement)
-	if strings.HasPrefix(sqlUpper, "UPDATE ") ||
-		strings.HasPrefix(sqlUpper, "INSERT ") ||
-		strings.HasPrefix(sqlUpper, "DELETE FROM ") ||
-		strings.HasPrefix(sqlUpper, "CREATE ") {
+	if strings.HasPrefix(sqlUpper, "UPDATE") ||
+		strings.HasPrefix(sqlUpper, "INSERT") ||
+		strings.HasPrefix(sqlUpper, "DELETE FROM") ||
+		strings.HasPrefix(sqlUpper, "CREATE") {
 		result, err := db.Exec(sqlStatement, sqlParams...)
 		if err != nil {
 			fmt.Println("Error executing: ", sqlStatement)
@@ -301,10 +305,10 @@ func ExecTx(tx *sql.Tx, sqlStatement string, sqlParams ...interface{}) (int64, e
 	}()
 
 	sqlUpper := strings.ToUpper(sqlStatement)
-	if strings.HasPrefix(sqlUpper, "UPDATE ") ||
-		strings.HasPrefix(sqlUpper, "INSERT ") ||
-		strings.HasPrefix(sqlUpper, "DELETE FROM ") ||
-		strings.HasPrefix(sqlUpper, "CREATE ") {
+	if strings.HasPrefix(sqlUpper, "UPDATE") ||
+		strings.HasPrefix(sqlUpper, "INSERT") ||
+		strings.HasPrefix(sqlUpper, "DELETE FROM") ||
+		strings.HasPrefix(sqlUpper, "CREATE") {
 		result, err := tx.Exec(sqlStatement, sqlParams...)
 		if err != nil {
 			fmt.Println("Error executing: ", sqlStatement)
