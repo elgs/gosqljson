@@ -33,13 +33,14 @@ import (
 func main() {
 	ds := "username:password@tcp(host:3306)/db"
 	db, err := sql.Open("mysql", ds)
-	defer db.Close()
 
 	if err != nil {
 		fmt.Println("sql.Open:", err)
+		return
 	}
+	defer db.Close()
 
-	theCase := "lower" // "lower" default, "upper", camel
+	theCase := "lower" // "lower", "upper" or "camel"
 
 	a, _ := gosqljson.QueryDbToArrayJson(db, theCase, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
 	fmt.Println(a)
