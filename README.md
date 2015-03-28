@@ -40,7 +40,7 @@ func main() {
 	}
 	defer db.Close()
 
-	theCase := "lower" // "lower", "upper" or "camel"
+	theCase := "lower" // "lower", "upper", "camel" or the orignal case if this is anything other than these three
 
 	a, _ := gosqljson.QueryDbToArrayJson(db, theCase, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
 	fmt.Println(a)

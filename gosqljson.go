@@ -51,6 +51,8 @@ func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams .
 			colsCamel[i] = toCamel(v)
 		}
 		results = append(results, colsCamel)
+	} else {
+		results = append(results, cols)
 	}
 
 	rawResult := make([][]byte, len(cols))
@@ -107,6 +109,8 @@ func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams .
 			colsCamel[i] = toCamel(v)
 		}
 		results = append(results, colsCamel)
+	} else {
+		results = append(results, cols)
 	}
 
 	rawResult := make([][]byte, len(cols))
@@ -180,6 +184,8 @@ func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...
 					result[cols[i]] = ""
 				} else if theCase == "camel" {
 					result[colsCamel[i]] = ""
+				} else {
+					result[cols[i]] = ""
 				}
 			} else {
 				if theCase == "lower" {
@@ -188,6 +194,8 @@ func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...
 					result[cols[i]] = string(raw)
 				} else if theCase == "camel" {
 					result[colsCamel[i]] = string(raw)
+				} else {
+					result[cols[i]] = string(raw)
 				}
 			}
 		}
@@ -245,6 +253,8 @@ func QueryTxToMap(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...
 					result[cols[i]] = ""
 				} else if theCase == "camel" {
 					result[colsCamel[i]] = ""
+				} else {
+					result[cols[i]] = ""
 				}
 			} else {
 				if theCase == "lower" {
@@ -253,6 +263,8 @@ func QueryTxToMap(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...
 					result[cols[i]] = string(raw)
 				} else if theCase == "camel" {
 					result[colsCamel[i]] = string(raw)
+				} else {
+					result[cols[i]] = string(raw)
 				}
 			}
 		}
