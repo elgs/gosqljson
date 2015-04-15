@@ -38,7 +38,6 @@ func main() {
 		fmt.Println("sql.Open:", err)
 		return
 	}
-	defer db.Close()
 
 	theCase := "lower" // "lower", "upper", "camel" or the orignal case if this is anything other than these three
 
