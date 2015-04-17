@@ -8,8 +8,12 @@ import (
 )
 
 func QueryDbToArrayJson(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
-	data, err := QueryDbToArray(db, theCase, sqlStatement, sqlParams...)
-	jsonString, err := json.Marshal(data)
+	headers, data, err := QueryDbToArray(db, theCase, sqlStatement, sqlParams...)
+	var result = map[string]interface{}{
+		"headers": headers,
+		"data":    data,
+	}
+	jsonString, err := json.Marshal(result)
 	return string(jsonString), err
 }
 
@@ -19,18 +23,20 @@ func QueryDbToMapJson(db *sql.DB, theCase string, sqlStatement string, sqlParams
 	return string(jsonString), err
 }
 
-func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) ([][]string, error) {
+// headers, data, error
+func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) ([]string, [][]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
 		}
 	}()
 
-	var results [][]string
+	var data [][]string
+	var headers []string
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)
-		return results, err
+		return headers, data, err
 	}
 	cols, _ := rows.Columns()
 	if theCase == "lower" {
@@ -38,21 +44,21 @@ func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams .
 		for i, v := range cols {
 			colsLower[i] = strings.ToLower(v)
 		}
-		results = append(results, colsLower)
+		headers = colsLower
 	} else if theCase == "upper" {
 		colsUpper := make([]string, len(cols))
 		for i, v := range cols {
 			colsUpper[i] = strings.ToUpper(v)
 		}
-		results = append(results, colsUpper)
+		headers = colsUpper
 	} else if theCase == "camel" {
 		colsCamel := make([]string, len(cols))
 		for i, v := range cols {
 			colsCamel[i] = toCamel(v)
 		}
-		results = append(results, colsCamel)
+		headers = colsCamel
 	} else {
-		results = append(results, cols)
+		headers = cols
 	}
 
 	rawResult := make([][]byte, len(cols))
@@ -72,23 +78,25 @@ func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams .
 				result[i] = string(raw)
 			}
 		}
-		results = append(results, result)
+		data = append(data, result)
 	}
-	return results, nil
+	return headers, data, nil
 }
 
-func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...interface{}) ([][]string, error) {
+// headers, data, error
+func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...interface{}) ([]string, [][]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
 		}
 	}()
 
-	var results [][]string
+	var data [][]string
+	var headers []string
 	rows, err := tx.Query(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)
-		return results, err
+		return headers, data, err
 	}
 	cols, _ := rows.Columns()
 	if theCase == "lower" {
@@ -96,21 +104,21 @@ func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams .
 		for i, v := range cols {
 			colsLower[i] = strings.ToLower(v)
 		}
-		results = append(results, colsLower)
+		headers = colsLower
 	} else if theCase == "upper" {
 		colsUpper := make([]string, len(cols))
 		for i, v := range cols {
 			colsUpper[i] = strings.ToUpper(v)
 		}
-		results = append(results, colsUpper)
+		headers = colsUpper
 	} else if theCase == "camel" {
 		colsCamel := make([]string, len(cols))
 		for i, v := range cols {
 			colsCamel[i] = toCamel(v)
 		}
-		results = append(results, colsCamel)
+		headers = colsCamel
 	} else {
-		results = append(results, cols)
+		headers = cols
 	}
 
 	rawResult := make([][]byte, len(cols))
@@ -130,9 +138,9 @@ func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams .
 				result[i] = string(raw)
 			}
 		}
-		results = append(results, result)
+		data = append(data, result)
 	}
-	return results, nil
+	return headers, data, nil
 }
 
 func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) ([]map[string]string, error) {
