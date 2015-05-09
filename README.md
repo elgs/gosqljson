@@ -41,12 +41,16 @@ func main() {
 
 	theCase := "lower" // "lower", "upper", "camel" or the orignal case if this is anything other than these three
 
-	a, _ := gosqljson.QueryDbToArrayJson(db, theCase, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
-	fmt.Println(a)
-	// [["id","name"],["0","Alicia"],["1","Brian"],["2","Chloe"]]
+	// headers []string, data [][]string, error
+	headers, data, _ := gosqljson.QueryDbToArray(db, theCase, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
+	fmt.Println(headers)
+	// ["id","name"]
+	fmt.Println(data)
+	// [["0","Alicia"],["1","Brian"],["2","Chloe"]]
 
-	m, _ := gosqljson.QueryDbToMapJson(db, theCase, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
-	fmt.Println(m)
+	// data []map[string]string, error
+	data, _ := gosqljson.QueryDbToMap(db, theCase, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
+	fmt.Println(data)
 	// [{"id":"0","name":"Alicia"},{"id":"1","name":"Brian"},{"id":"2","name":"Chloe"}]
 
 }
