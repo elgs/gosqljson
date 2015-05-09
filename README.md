@@ -52,6 +52,5 @@ func main() {
 	data, _ := gosqljson.QueryDbToMap(db, theCase, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
 	fmt.Println(data)
 	// [{"id":"0","name":"Alicia"},{"id":"1","name":"Brian"},{"id":"2","name":"Chloe"}]
-
 }
 ```
