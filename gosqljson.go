@@ -8,7 +8,7 @@ import (
 )
 
 // QueryDbToArrayJson - run the sql and return a a JSON string of array
-func QueryDbToArrayJson(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
+func QueryDbToArrayJSON(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
 	headers, data, err := QueryDbToArray(db, theCase, sqlStatement, sqlParams...)
 	var result = map[string]interface{}{
 		"headers": headers,
@@ -19,7 +19,7 @@ func QueryDbToArrayJson(db *sql.DB, theCase string, sqlStatement string, sqlPara
 }
 
 // QueryDbToMapJson - run the sql and return a JSON string of array of objects.
-func QueryDbToMapJson(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
+func QueryDbToMapJSON(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
 	data, err := QueryDbToMap(db, theCase, sqlStatement, sqlParams...)
 	jsonString, err := json.Marshal(data)
 	return string(jsonString), err
