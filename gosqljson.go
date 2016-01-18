@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// QueryDbToArrayJson - run the sql and return a a JSON string of array
 func QueryDbToArrayJson(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
 	headers, data, err := QueryDbToArray(db, theCase, sqlStatement, sqlParams...)
 	var result = map[string]interface{}{
@@ -17,13 +18,14 @@ func QueryDbToArrayJson(db *sql.DB, theCase string, sqlStatement string, sqlPara
 	return string(jsonString), err
 }
 
+// QueryDbToMapJson - run the sql and return a JSON string of array of objects.
 func QueryDbToMapJson(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
 	data, err := QueryDbToMap(db, theCase, sqlStatement, sqlParams...)
 	jsonString, err := json.Marshal(data)
 	return string(jsonString), err
 }
 
-// headers, data, error
+// QueryDbToArray - headers, data, error
 func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) ([]string, [][]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -83,7 +85,7 @@ func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams .
 	return headers, data, nil
 }
 
-// headers, data, error
+// QueryTxToArray - headers, data, error
 func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...interface{}) ([]string, [][]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -143,6 +145,7 @@ func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams .
 	return headers, data, nil
 }
 
+// QueryDbToMap - run sql and return an array of maps
 func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) ([]map[string]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -212,6 +215,7 @@ func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...
 	return results, nil
 }
 
+// QueryTxToMap - run sql and return an array of maps
 func QueryTxToMap(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...interface{}) ([]map[string]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -281,6 +285,7 @@ func QueryTxToMap(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...
 	return results, nil
 }
 
+// ExecDb - run the sql and returns rows affected.
 func ExecDb(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -296,6 +301,7 @@ func ExecDb(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, e
 	return result.RowsAffected()
 }
 
+// ExecTx - run the sql and returns rows affected.
 func ExecTx(tx *sql.Tx, sqlStatement string, sqlParams ...interface{}) (int64, error) {
 	defer func() {
 		if err := recover(); err != nil {
