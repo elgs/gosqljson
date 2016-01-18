@@ -64,7 +64,7 @@ func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams .
 	rawResult := make([][]byte, len(cols))
 
 	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
-	for i, _ := range rawResult {
+	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
 
@@ -124,7 +124,7 @@ func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams .
 	rawResult := make([][]byte, len(cols))
 
 	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
-	for i, _ := range rawResult {
+	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
 
@@ -177,7 +177,7 @@ func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...
 	rawResult := make([][]byte, len(cols))
 
 	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
-	for i, _ := range rawResult {
+	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
 
@@ -246,7 +246,7 @@ func QueryTxToMap(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...
 	rawResult := make([][]byte, len(cols))
 
 	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
-	for i, _ := range rawResult {
+	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
 
