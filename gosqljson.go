@@ -10,7 +10,7 @@ import (
 // QueryDbToArrayJSON - run the sql and return a a JSON string of array
 func QueryDbToArrayJSON(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
 	headers, data, err := QueryDbToArray(db, theCase, sqlStatement, sqlParams...)
-	var result = map[string]interface{}{
+	result := map[string]interface{}{
 		"headers": headers,
 		"data":    data,
 	}
@@ -33,8 +33,8 @@ func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams .
 		}
 	}()
 
-	var data [][]string
-	var headers []string
+	data := [][]string{}
+	headers := []string{}
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)
@@ -93,8 +93,8 @@ func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams .
 		}
 	}()
 
-	var data [][]string
-	var headers []string
+	data := [][]string{}
+	headers := []string{}
 	rows, err := tx.Query(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)
@@ -153,7 +153,7 @@ func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...
 		}
 	}()
 
-	var results []map[string]string
+	results := []map[string]string{}
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)
@@ -223,7 +223,7 @@ func QueryTxToMap(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...
 		}
 	}()
 
-	var results []map[string]string
+	results := []map[string]string{}
 	rows, err := tx.Query(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)
