@@ -7,10 +7,22 @@ import (
 	"strings"
 )
 
-// QueryDbToArrayJSON - run the sql and return a a JSON string of array
-func QueryDbToArrayJSON(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
-	headers, data, err := QueryDbToArray(db, theCase, sqlStatement, sqlParams...)
-	result := map[string]interface{}{
+const (
+	AsIs = iota
+	Lower
+	Upper
+	Camel
+)
+
+type DB interface {
+	Query(query string, args ...any) (*sql.Rows, error)
+	Exec(query string, args ...any) (sql.Result, error)
+}
+
+// QueryToArrayJSON - run the sql and return a a JSON string of array
+func QueryToArrayJSON[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) (string, error) {
+	headers, data, err := QueryToArray(db, theCase, sqlStatement, sqlParams...)
+	result := map[string]any{
 		"headers": headers,
 		"data":    data,
 	}
@@ -18,15 +30,15 @@ func QueryDbToArrayJSON(db *sql.DB, theCase string, sqlStatement string, sqlPara
 	return string(jsonString), err
 }
 
-// QueryDbToMapJSON - run the sql and return a JSON string of array of objects.
-func QueryDbToMapJSON(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) (string, error) {
-	data, err := QueryDbToMap(db, theCase, sqlStatement, sqlParams...)
+// QueryToMapJSON - run the sql and return a JSON string of array of objects.
+func QueryToMapJSON[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) (string, error) {
+	data, err := QueryToMap(db, theCase, sqlStatement, sqlParams...)
 	jsonString, err := json.Marshal(data)
 	return string(jsonString), err
 }
 
-// QueryDbToArray - headers, data, error
-func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) ([]string, [][]string, error) {
+// QueryToArray - headers, data, error
+func QueryToArray[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) ([]string, [][]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
@@ -34,44 +46,32 @@ func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams .
 	}()
 
 	data := [][]string{}
-	headers := []string{}
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)
-		return headers, data, err
+		return []string{}, data, err
 	}
 	cols, _ := rows.Columns()
-	if theCase == "lower" {
-		colsLower := make([]string, len(cols))
-		for i, v := range cols {
-			colsLower[i] = strings.ToLower(v)
+	lenCols := len(cols)
+	for i, v := range cols {
+		if theCase == Lower {
+			cols[i] = strings.ToLower(v)
+		} else if theCase == Upper {
+			cols[i] = strings.ToUpper(v)
+		} else if theCase == Camel {
+			cols[i] = toCamel(v)
 		}
-		headers = colsLower
-	} else if theCase == "upper" {
-		colsUpper := make([]string, len(cols))
-		for i, v := range cols {
-			colsUpper[i] = strings.ToUpper(v)
-		}
-		headers = colsUpper
-	} else if theCase == "camel" {
-		colsCamel := make([]string, len(cols))
-		for i, v := range cols {
-			colsCamel[i] = toCamel(v)
-		}
-		headers = colsCamel
-	} else {
-		headers = cols
 	}
 
-	rawResult := make([][]byte, len(cols))
+	rawResult := make([][]byte, lenCols)
 
-	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
+	dest := make([]any, lenCols) // A temporary any slice
 	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
 
 	for rows.Next() {
-		result := make([]string, len(cols))
+		result := make([]string, lenCols)
 		rows.Scan(dest...)
 		for i, raw := range rawResult {
 			if raw == nil {
@@ -82,71 +82,11 @@ func QueryDbToArray(db *sql.DB, theCase string, sqlStatement string, sqlParams .
 		}
 		data = append(data, result)
 	}
-	return headers, data, nil
+	return cols, data, nil
 }
 
-// QueryTxToArray - headers, data, error
-func QueryTxToArray(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...interface{}) ([]string, [][]string, error) {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err)
-		}
-	}()
-
-	data := [][]string{}
-	headers := []string{}
-	rows, err := tx.Query(sqlStatement, sqlParams...)
-	if err != nil {
-		fmt.Println("Error executing: ", sqlStatement)
-		return headers, data, err
-	}
-	cols, _ := rows.Columns()
-	if theCase == "lower" {
-		colsLower := make([]string, len(cols))
-		for i, v := range cols {
-			colsLower[i] = strings.ToLower(v)
-		}
-		headers = colsLower
-	} else if theCase == "upper" {
-		colsUpper := make([]string, len(cols))
-		for i, v := range cols {
-			colsUpper[i] = strings.ToUpper(v)
-		}
-		headers = colsUpper
-	} else if theCase == "camel" {
-		colsCamel := make([]string, len(cols))
-		for i, v := range cols {
-			colsCamel[i] = toCamel(v)
-		}
-		headers = colsCamel
-	} else {
-		headers = cols
-	}
-
-	rawResult := make([][]byte, len(cols))
-
-	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
-	for i := range rawResult {
-		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
-	}
-
-	for rows.Next() {
-		result := make([]string, len(cols))
-		rows.Scan(dest...)
-		for i, raw := range rawResult {
-			if raw == nil {
-				result[i] = ""
-			} else {
-				result[i] = string(raw)
-			}
-		}
-		data = append(data, result)
-	}
-	return headers, data, nil
-}
-
-// QueryDbToMap - run sql and return an array of maps
-func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...interface{}) ([]map[string]string, error) {
+// QueryToMap - run sql and return an array of maps
+func QueryToMap[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) ([]map[string]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
@@ -160,54 +100,33 @@ func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...
 		return results, err
 	}
 	cols, _ := rows.Columns()
-	colsLower := make([]string, len(cols))
-	colsCamel := make([]string, len(cols))
+	lenCols := len(cols)
 
-	if theCase == "lower" {
-		for i, v := range cols {
-			colsLower[i] = strings.ToLower(v)
-		}
-	} else if theCase == "upper" {
-		for i, v := range cols {
+	for i, v := range cols {
+		if theCase == Lower {
+			cols[i] = strings.ToLower(v)
+		} else if theCase == Upper {
 			cols[i] = strings.ToUpper(v)
-		}
-	} else if theCase == "camel" {
-		for i, v := range cols {
-			colsCamel[i] = toCamel(v)
+		} else if theCase == Camel {
+			cols[i] = toCamel(v)
 		}
 	}
 
-	rawResult := make([][]byte, len(cols))
+	rawResult := make([][]byte, lenCols)
 
-	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
+	dest := make([]any, lenCols) // A temporary any slice
 	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
 
 	for rows.Next() {
-		result := make(map[string]string, len(cols))
+		result := make(map[string]string, lenCols)
 		rows.Scan(dest...)
 		for i, raw := range rawResult {
 			if raw == nil {
-				if theCase == "lower" {
-					result[colsLower[i]] = ""
-				} else if theCase == "upper" {
-					result[cols[i]] = ""
-				} else if theCase == "camel" {
-					result[colsCamel[i]] = ""
-				} else {
-					result[cols[i]] = ""
-				}
+				result[cols[i]] = ""
 			} else {
-				if theCase == "lower" {
-					result[colsLower[i]] = string(raw)
-				} else if theCase == "upper" {
-					result[cols[i]] = string(raw)
-				} else if theCase == "camel" {
-					result[colsCamel[i]] = string(raw)
-				} else {
-					result[cols[i]] = string(raw)
-				}
+				result[cols[i]] = string(raw)
 			}
 		}
 		results = append(results, result)
@@ -215,101 +134,14 @@ func QueryDbToMap(db *sql.DB, theCase string, sqlStatement string, sqlParams ...
 	return results, nil
 }
 
-// QueryTxToMap - run sql and return an array of maps
-func QueryTxToMap(tx *sql.Tx, theCase string, sqlStatement string, sqlParams ...interface{}) ([]map[string]string, error) {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err)
-		}
-	}()
-
-	results := []map[string]string{}
-	rows, err := tx.Query(sqlStatement, sqlParams...)
-	if err != nil {
-		fmt.Println("Error executing: ", sqlStatement)
-		return results, err
-	}
-	cols, _ := rows.Columns()
-	colsLower := make([]string, len(cols))
-	colsCamel := make([]string, len(cols))
-
-	if theCase == "lower" {
-		for i, v := range cols {
-			colsLower[i] = strings.ToLower(v)
-		}
-	} else if theCase == "upper" {
-		for i, v := range cols {
-			cols[i] = strings.ToUpper(v)
-		}
-	} else if theCase == "camel" {
-		for i, v := range cols {
-			colsCamel[i] = toCamel(v)
-		}
-	}
-
-	rawResult := make([][]byte, len(cols))
-
-	dest := make([]interface{}, len(cols)) // A temporary interface{} slice
-	for i := range rawResult {
-		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
-	}
-
-	for rows.Next() {
-		result := make(map[string]string, len(cols))
-		rows.Scan(dest...)
-		for i, raw := range rawResult {
-			if raw == nil {
-				if theCase == "lower" {
-					result[colsLower[i]] = ""
-				} else if theCase == "upper" {
-					result[cols[i]] = ""
-				} else if theCase == "camel" {
-					result[colsCamel[i]] = ""
-				} else {
-					result[cols[i]] = ""
-				}
-			} else {
-				if theCase == "lower" {
-					result[colsLower[i]] = string(raw)
-				} else if theCase == "upper" {
-					result[cols[i]] = string(raw)
-				} else if theCase == "camel" {
-					result[colsCamel[i]] = string(raw)
-				} else {
-					result[cols[i]] = string(raw)
-				}
-			}
-		}
-		results = append(results, result)
-	}
-	return results, nil
-}
-
-// ExecDb - run the sql and returns rows affected.
-func ExecDb(db *sql.DB, sqlStatement string, sqlParams ...interface{}) (int64, error) {
+// Exec - run the sql and returns rows affected.
+func Exec[T DB](db T, sqlStatement string, sqlParams ...any) (int64, error) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
 		}
 	}()
 	result, err := db.Exec(sqlStatement, sqlParams...)
-	if err != nil {
-		fmt.Println("Error executing: ", sqlStatement)
-		fmt.Println(err)
-		return 0, err
-	}
-	return result.RowsAffected()
-}
-
-// ExecTx - run the sql and returns rows affected.
-func ExecTx(tx *sql.Tx, sqlStatement string, sqlParams ...interface{}) (int64, error) {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err)
-		}
-	}()
-
-	result, err := tx.Exec(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)
 		fmt.Println(err)
