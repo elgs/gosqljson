@@ -39,16 +39,16 @@ func main() {
 		return
 	}
 
-	// headers []string, data [][]string, error
+	// headers []string, data [][]any, error
 	headers, data, _ := gosqljson.QueryToArray(db, gosqljson.Lower, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
 	fmt.Println(headers)
 	// ["id","name"]
 	fmt.Println(data)
-	// [["0","Alicia"],["1","Brian"],["2","Chloe"]]
+	// [[0,"Alicia"],[1,"Brian"],[2,"Chloe"]]
 
-	// data []map[string]string, error
+	// data []map[string]any, error
 	data, _ := gosqljson.QueryToMap(db, gosqljson.Lower, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
 	fmt.Println(data)
-	// [{"id":"0","name":"Alicia"},{"id":"1","name":"Brian"},{"id":"2","name":"Chloe"}]
+	// [{"id":0,"name":"Alicia"},{"id":1,"name":"Brian"},{"id":2,"name":"Chloe"}]
 }
 ```
