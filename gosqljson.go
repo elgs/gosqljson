@@ -19,9 +19,12 @@ type DB interface {
 	Exec(query string, args ...any) (sql.Result, error)
 }
 
-// QueryToArrayJSON - run the sql and return a a JSON string of array
+// QueryToArrayJSON - run the sql and return a JSON string of array of arrays.
 func QueryToArrayJSON[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) (string, error) {
 	headers, data, err := QueryToArray(db, theCase, sqlStatement, sqlParams...)
+	if err != nil {
+		return "", err
+	}
 	result := map[string]any{
 		"headers": headers,
 		"data":    data,
@@ -30,22 +33,19 @@ func QueryToArrayJSON[T DB](db T, theCase int, sqlStatement string, sqlParams ..
 	return string(jsonString), err
 }
 
-// QueryToMapJSON - run the sql and return a JSON string of array of objects.
+// QueryToMapJSON - run the sql and return a JSON string of array of maps.
 func QueryToMapJSON[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) (string, error) {
 	data, err := QueryToMap(db, theCase, sqlStatement, sqlParams...)
+	if err != nil {
+		return "", err
+	}
 	jsonString, err := json.Marshal(data)
 	return string(jsonString), err
 }
 
-// QueryToArray - headers, data, error
-func QueryToArray[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) ([]string, [][]string, error) {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err)
-		}
-	}()
-
-	data := [][]string{}
+// QueryToArray - run sql and return an array of arrays
+func QueryToArray[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) ([]string, [][]any, error) {
+	data := [][]any{}
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)
@@ -63,7 +63,7 @@ func QueryToArray[T DB](db T, theCase int, sqlStatement string, sqlParams ...any
 		}
 	}
 
-	rawResult := make([][]byte, lenCols)
+	rawResult := make([]any, lenCols)
 
 	dest := make([]any, lenCols) // A temporary any slice
 	for i := range rawResult {
@@ -71,13 +71,13 @@ func QueryToArray[T DB](db T, theCase int, sqlStatement string, sqlParams ...any
 	}
 
 	for rows.Next() {
-		result := make([]string, lenCols)
+		result := make([]any, lenCols)
 		rows.Scan(dest...)
 		for i, raw := range rawResult {
 			if raw == nil {
-				result[i] = ""
+				result[i] = nil
 			} else {
-				result[i] = string(raw)
+				result[i] = raw
 			}
 		}
 		data = append(data, result)
@@ -86,14 +86,8 @@ func QueryToArray[T DB](db T, theCase int, sqlStatement string, sqlParams ...any
 }
 
 // QueryToMap - run sql and return an array of maps
-func QueryToMap[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) ([]map[string]string, error) {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err)
-		}
-	}()
-
-	results := []map[string]string{}
+func QueryToMap[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) ([]map[string]any, error) {
+	results := []map[string]any{}
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)
@@ -112,7 +106,7 @@ func QueryToMap[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) 
 		}
 	}
 
-	rawResult := make([][]byte, lenCols)
+	rawResult := make([]any, lenCols)
 
 	dest := make([]any, lenCols) // A temporary any slice
 	for i := range rawResult {
@@ -120,13 +114,13 @@ func QueryToMap[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) 
 	}
 
 	for rows.Next() {
-		result := make(map[string]string, lenCols)
+		result := make(map[string]any, lenCols)
 		rows.Scan(dest...)
 		for i, raw := range rawResult {
 			if raw == nil {
-				result[cols[i]] = ""
+				result[cols[i]] = nil
 			} else {
-				result[cols[i]] = string(raw)
+				result[cols[i]] = raw
 			}
 		}
 		results = append(results, result)
@@ -134,13 +128,8 @@ func QueryToMap[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) 
 	return results, nil
 }
 
-// Exec - run the sql and returns rows affected.
+// Exec - run sql and return the number of rows affected
 func Exec[T DB](db T, sqlStatement string, sqlParams ...any) (int64, error) {
-	defer func() {
-		if err := recover(); err != nil {
-			fmt.Println(err)
-		}
-	}()
 	result, err := db.Exec(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)
