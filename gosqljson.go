@@ -129,14 +129,25 @@ func QueryToMap[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) 
 }
 
 // Exec - run sql and return the number of rows affected
-func Exec[T DB](db T, sqlStatement string, sqlParams ...any) (int64, error) {
+func Exec[T DB](db T, sqlStatement string, sqlParams ...any) (map[string]int64, error) {
 	result, err := db.Exec(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)
 		fmt.Println(err)
-		return 0, err
+		return nil, err
 	}
-	return result.RowsAffected()
+	rowsffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	ret := map[string]int64{
+		"rows_affected": rowsffected,
+	}
+	lastInsertId, err := result.LastInsertId()
+	if err == nil {
+		ret["last_insert_id"] = lastInsertId
+	}
+	return ret, nil
 }
 
 func toCamel(s string) (ret string) {
