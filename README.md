@@ -1,5 +1,4 @@
-gosqljson
-=========
+# gosqljson
 
 A Go SQL to JSON library.
 
@@ -7,47 +6,55 @@ A Go SQL to JSON library.
 `go get -u github.com/elgs/gosqljson`
 
 # Sample code
-Data in the table:
-```
-ID	NAME
 
-0	Alicia
-1	Brian
-2	Chloe
-4	Bianca
-5	Leo
-6	Joy
-7	Sam
-8	Elgs
-```
+Please note all the `err`s are ignored for simplicity. You should always check the `err` returned.
+
 ```go
 package main
 
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
+
+	"github.com/elgs/gosqljson"
+	_ "modernc.org/sqlite"
 )
 
+type User struct {
+	Id   int    `db:"id"`
+	Name string `db:"name"`
+}
+
 func main() {
-	ds := "username:password@tcp(host:3306)/db"
-	db, err := sql.Open("mysql", ds)
+	db, _ := sql.Open("sqlite", ":memory:")
 
-	if err != nil {
-		fmt.Println("sql.Open:", err)
-		return
-	}
+	result, _ := gosqljson.Exec(db, "CREATE TABLE test (ID INTEGER PRIMARY KEY, NAME TEXT)")
+	fmt.Printf("result: %+v\n", result)
+	// result: map[last_insert_id:0 rows_affected:0]
 
-	// headers []string, data [][]any, error
-	headers, data, _ := gosqljson.QueryToArray(db, gosqljson.Lower, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
-	fmt.Println(headers)
-	// ["id","name"]
-	fmt.Println(data)
-	// [[0,"Alicia"],[1,"Brian"],[2,"Chloe"]]
+	result, _ = gosqljson.Exec(db, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 1, "Alpha")
+	fmt.Printf("result: %+v\n", result)
+	// result: map[last_insert_id:1 rows_affected:1]
 
-	// data []map[string]any, error
-	data, _ := gosqljson.QueryToMap(db, gosqljson.Lower, "SELECT ID,NAME FROM t LIMIT ?,?", 0, 3)
-	fmt.Println(data)
-	// [{"id":0,"name":"Alicia"},{"id":1,"name":"Brian"},{"id":2,"name":"Chloe"}]
+	result, _ = gosqljson.Exec(db, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 2, "Beta")
+	fmt.Printf("result: %+v\n", result)
+	// result: map[last_insert_id:2 rows_affected:1]
+
+	result, _ = gosqljson.Exec(db, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 3, "Gamma")
+	fmt.Printf("result: %+v\n", result)
+	// result: map[last_insert_id:3 rows_affected:1]
+
+	cols, resultArray, _ := gosqljson.QueryToArray(db, gosqljson.AsIs, "SELECT * FROM test WHERE ID > ?", 1)
+	fmt.Printf("cols: %+v\n", cols)         // cols: [ID NAME]
+	fmt.Printf("array: %+v\n", resultArray) // array: [[2 Beta] [3 Gamma]]
+
+	resultMap, _ := gosqljson.QueryToMap(db, gosqljson.AsIs, "SELECT * FROM test WHERE ID < ?", 3)
+	fmt.Printf("map: %+v\n", resultMap)
+	// map: [map[ID:1 NAME:Alpha] map[ID:2 NAME:Beta]]
+
+	resultStructs := []User{}
+	_ = gosqljson.QueryToStruct(db, &resultStructs, "SELECT  NAME,ID FROM test WHERE ID > ?", 0)
+	fmt.Printf("structs: %+v\n", resultStructs)
+	// structs: [{Id:1 Name:Alpha} {Id:2 Name:Beta} {Id:3 Name:Gamma}]
 }
 ```
