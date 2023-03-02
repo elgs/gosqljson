@@ -2,10 +2,12 @@ package gosqljson
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 )
+
+var Version = "2"
 
 const (
 	AsIs = iota
@@ -17,30 +19,6 @@ const (
 type DB interface {
 	Query(query string, args ...any) (*sql.Rows, error)
 	Exec(query string, args ...any) (sql.Result, error)
-}
-
-// QueryToArrayJSON - run the sql and return a JSON string of array of arrays.
-func QueryToArrayJSON[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) (string, error) {
-	headers, data, err := QueryToArray(db, theCase, sqlStatement, sqlParams...)
-	if err != nil {
-		return "", err
-	}
-	result := map[string]any{
-		"headers": headers,
-		"data":    data,
-	}
-	jsonString, err := json.Marshal(result)
-	return string(jsonString), err
-}
-
-// QueryToMapJSON - run the sql and return a JSON string of array of maps.
-func QueryToMapJSON[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) (string, error) {
-	data, err := QueryToMap(db, theCase, sqlStatement, sqlParams...)
-	if err != nil {
-		return "", err
-	}
-	jsonString, err := json.Marshal(data)
-	return string(jsonString), err
 }
 
 // QueryToArray - run sql and return an array of arrays
@@ -64,22 +42,14 @@ func QueryToArray[T DB](db T, theCase int, sqlStatement string, sqlParams ...any
 	}
 
 	rawResult := make([]any, lenCols)
-
 	dest := make([]any, lenCols) // A temporary any slice
 	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
-
 	for rows.Next() {
 		result := make([]any, lenCols)
 		rows.Scan(dest...)
-		for i, raw := range rawResult {
-			if raw == nil {
-				result[i] = nil
-			} else {
-				result[i] = raw
-			}
-		}
+		copy(result, rawResult)
 		data = append(data, result)
 	}
 	return cols, data, nil
@@ -107,25 +77,57 @@ func QueryToMap[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) 
 	}
 
 	rawResult := make([]any, lenCols)
-
 	dest := make([]any, lenCols) // A temporary any slice
 	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
 	}
-
 	for rows.Next() {
 		result := make(map[string]any, lenCols)
 		rows.Scan(dest...)
 		for i, raw := range rawResult {
-			if raw == nil {
-				result[cols[i]] = nil
-			} else {
-				result[cols[i]] = raw
-			}
+			result[cols[i]] = raw
 		}
 		results = append(results, result)
 	}
 	return results, nil
+}
+
+func QueryToStruct[T DB, S any](db T, results *[]S, sqlStatement string, sqlParams ...any) error {
+	rows, err := db.Query(sqlStatement, sqlParams...)
+	if err != nil {
+		fmt.Println("Error executing: ", sqlStatement)
+		return err
+	}
+	cols, _ := rows.Columns()
+	lenCols := len(cols)
+
+	for rows.Next() { // iterate through rows
+		colValues := make([]any, lenCols)
+		var result S
+		structValue := reflect.ValueOf(&result).Elem()
+		for colIndex, colName := range cols { // iterate through columns
+			found := false
+			for fieldIndex := 0; fieldIndex < structValue.NumField(); fieldIndex++ { // iterate through struct fields
+				field := structValue.Type().Field(fieldIndex)
+				fieldTag := field.Tag.Get("db")
+				if fieldTag == "" {
+					fieldTag = field.Name
+				}
+				if strings.EqualFold(colName, fieldTag) {
+					colValues[colIndex] = structValue.Field(fieldIndex).Addr().Interface()
+					found = true
+					break
+				}
+			}
+			if !found {
+				colValues[colIndex] = new(any)
+			}
+		}
+		rows.Scan(colValues...)
+		*results = append(*results, result)
+	}
+
+	return nil
 }
 
 // Exec - run sql and return the number of rows affected

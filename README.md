@@ -26,7 +26,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/elgs/gosqljson"
 	_ "github.com/go-sql-driver/mysql"
 )
 
