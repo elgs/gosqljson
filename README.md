@@ -1,6 +1,6 @@
 # gosqljson
 
-A Go SQL to JSON library.
+A Go library to work with SQL database using standard `database/sql` api. It provides a set of functions to convert query result to array, map and struct.
 
 #Installation
 `go get -u github.com/elgs/gosqljson`
