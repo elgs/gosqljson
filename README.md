@@ -8,7 +8,7 @@ A Go library to work with SQL database using standard `database/sql` api. It pro
 
 # Sample code
 
-Please note all the `err`s are ignored for simplicity. You should always check the `err` returned.
+Please note all the `err`s are ignored for brevity in the following code. . You should always check the `err` returned.
 
 ```go
 package main
