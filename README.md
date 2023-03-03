@@ -10,6 +10,8 @@ A Go library to work with SQL database using standard `database/sql` api. It pro
 
 Please note all the `err`s are ignored for brevity in the following code. You should always check the `err` returned.
 
+You could pass either `*sql.DB` or `*sql.Tx` to the functions.
+
 ```go
 package main
 
@@ -33,17 +35,19 @@ func main() {
 	fmt.Printf("result: %+v\n", result)
 	// result: map[last_insert_id:0 rows_affected:0]
 
-	result, _ = gosqljson.Exec(db, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 1, "Alpha")
+	tx, _ := db.Begin()
+	result, _ = gosqljson.Exec(tx, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 1, "Alpha")
 	fmt.Printf("result: %+v\n", result)
 	// result: map[last_insert_id:1 rows_affected:1]
 
-	result, _ = gosqljson.Exec(db, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 2, "Beta")
+	result, _ = gosqljson.Exec(tx, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 2, "Beta")
 	fmt.Printf("result: %+v\n", result)
 	// result: map[last_insert_id:2 rows_affected:1]
 
-	result, _ = gosqljson.Exec(db, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 3, "Gamma")
+	result, _ = gosqljson.Exec(tx, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 3, "Gamma")
 	fmt.Printf("result: %+v\n", result)
 	// result: map[last_insert_id:3 rows_affected:1]
+	tx.Commit()
 
 	cols, resultArray, _ := gosqljson.QueryToArray(db, gosqljson.AsIs, "SELECT * FROM test WHERE ID > ?", 1)
 	fmt.Printf("cols: %+v\n", cols)         // cols: [ID NAME]

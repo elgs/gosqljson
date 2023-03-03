@@ -24,23 +24,25 @@ func TestAll(t *testing.T) {
 	}
 	fmt.Printf("result: %+v\n", result)
 
-	result, err = Exec(db, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 1, "Alpha")
+	tx, _ := db.Begin()
+	result, err = Exec(tx, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 1, "Alpha")
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf("result: %+v\n", result)
 
-	result, err = Exec(db, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 2, "Beta")
+	result, err = Exec(tx, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 2, "Beta")
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf("result: %+v\n", result)
 
-	result, err = Exec(db, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 3, "Gamma")
+	result, err = Exec(tx, "INSERT INTO test (ID, NAME) VALUES (?, ?)", 3, "Gamma")
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf("result: %+v\n", result)
+	tx.Commit()
 
 	cols, resultArray, err := QueryToArray(db, AsIs, "SELECT * FROM test WHERE ID > ?", 1)
 	if err != nil {
