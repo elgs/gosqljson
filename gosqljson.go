@@ -110,9 +110,6 @@ func QueryToStruct[T DB, S any](db T, results *[]S, sqlStatement string, sqlPara
 			for fieldIndex := 0; fieldIndex < structValue.NumField(); fieldIndex++ { // iterate through struct fields
 				field := structValue.Type().Field(fieldIndex)
 				fieldTag := field.Tag.Get("db")
-				if fieldTag == "" {
-					fieldTag = field.Name
-				}
 				if strings.EqualFold(colName, fieldTag) {
 					colValues[colIndex] = structValue.Field(fieldIndex).Addr().Interface()
 					found = true
