@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"testing"
-	// upcomming the next line and run go mod tidy to test with sqlite
+	// uncomment the next line and run go mod tidy to test with sqlite
 	// _ "modernc.org/sqlite"
 )
 
