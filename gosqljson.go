@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var Version = "2"
+var Version = "3"
 
 const (
 	AsIs = iota
@@ -21,8 +21,8 @@ type DB interface {
 	Exec(query string, args ...any) (sql.Result, error)
 }
 
-// QueryToArray - run sql and return an array of arrays
-func QueryToArray[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) ([]string, [][]any, error) {
+// QueryToArrays - run sql and return an array of arrays
+func QueryToArrays[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) ([]string, [][]any, error) {
 	data := [][]any{}
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
@@ -55,8 +55,8 @@ func QueryToArray[T DB](db T, theCase int, sqlStatement string, sqlParams ...any
 	return cols, data, nil
 }
 
-// QueryToMap - run sql and return an array of maps
-func QueryToMap[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) ([]map[string]any, error) {
+// QueryToMaps - run sql and return an array of maps
+func QueryToMaps[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) ([]map[string]any, error) {
 	results := []map[string]any{}
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
@@ -92,7 +92,7 @@ func QueryToMap[T DB](db T, theCase int, sqlStatement string, sqlParams ...any) 
 	return results, nil
 }
 
-func QueryToStruct[T DB, S any](db T, results *[]S, sqlStatement string, sqlParams ...any) error {
+func QueryToStructs[T DB, S any](db T, results *[]S, sqlStatement string, sqlParams ...any) error {
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
 		fmt.Println("Error executing: ", sqlStatement)

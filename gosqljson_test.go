@@ -44,21 +44,21 @@ func TestAll(t *testing.T) {
 	fmt.Printf("result: %+v\n", result)
 	tx.Commit()
 
-	cols, resultArray, err := QueryToArray(db, AsIs, "SELECT * FROM test WHERE ID > ?", 1)
+	cols, resultArray, err := QueryToArrays(db, AsIs, "SELECT * FROM test WHERE ID > ?", 1)
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf("cols: %+v\n", cols)
-	fmt.Printf("array: %+v\n", resultArray)
+	fmt.Printf("arrays: %+v\n", resultArray)
 
-	resultMap, err := QueryToMap(db, AsIs, "SELECT * FROM test WHERE ID < ?", 3)
+	resultMaps, err := QueryToMaps(db, AsIs, "SELECT * FROM test WHERE ID < ?", 3)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("map: %+v\n", resultMap)
+	fmt.Printf("maps: %+v\n", resultMaps)
 
 	resultStructs := []Test{}
-	err = QueryToStruct(db, &resultStructs, "SELECT  NAME,ID FROM test WHERE ID > ?", 0)
+	err = QueryToStructs(db, &resultStructs, "SELECT  NAME,ID FROM test WHERE ID > ?", 0)
 	if err != nil {
 		t.Fatal(err)
 	}

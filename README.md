@@ -49,16 +49,16 @@ func main() {
 	// result: map[last_insert_id:3 rows_affected:1]
 	tx.Commit()
 
-	cols, resultArray, _ := gosqljson.QueryToArray(db, gosqljson.AsIs, "SELECT * FROM test WHERE ID > ?", 1)
+	cols, resultArrays, _ := gosqljson.QueryToArrays(db, gosqljson.AsIs, "SELECT * FROM test WHERE ID > ?", 1)
 	fmt.Printf("cols: %+v\n", cols)         // cols: [ID NAME]
-	fmt.Printf("array: %+v\n", resultArray) // array: [[2 Beta] [3 Gamma]]
+	fmt.Printf("arrays: %+v\n", resultArrays) // array: [[2 Beta] [3 Gamma]]
 
-	resultMap, _ := gosqljson.QueryToMap(db, gosqljson.AsIs, "SELECT * FROM test WHERE ID < ?", 3)
-	fmt.Printf("map: %+v\n", resultMap)
+	resultMaps, _ := gosqljson.QueryToMaps(db, gosqljson.AsIs, "SELECT * FROM test WHERE ID < ?", 3)
+	fmt.Printf("maps: %+v\n", resultMaps)
 	// map: [map[ID:1 NAME:Alpha] map[ID:2 NAME:Beta]]
 
 	resultStructs := []User{}
-	_ = gosqljson.QueryToStruct(db, &resultStructs, "SELECT  NAME,ID FROM test WHERE ID > ?", 0)
+	_ = gosqljson.QueryToStructs(db, &resultStructs, "SELECT  NAME,ID FROM test WHERE ID > ?", 0)
 	fmt.Printf("structs: %+v\n", resultStructs)
 	// structs: [{Id:1 Name:Alpha} {Id:2 Name:Beta} {Id:3 Name:Gamma}]
 }
