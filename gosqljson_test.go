@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"testing"
-
-	_ "modernc.org/sqlite"
+	// upcomming the next line and run go mod tidy to test with sqlite
+	// _ "modernc.org/sqlite"
 )
 
 type Test struct {
