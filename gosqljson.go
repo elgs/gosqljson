@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
+	"time"
 )
 
 var Version = "3"
@@ -42,6 +44,7 @@ func QueryToArrays[T DB](db T, theCase int, sqlStatement string, sqlParams ...an
 	}
 
 	rawResult := make([]any, lenCols)
+	colTypes, _ := rows.ColumnTypes()
 	dest := make([]any, lenCols) // A temporary any slice
 	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
@@ -49,7 +52,30 @@ func QueryToArrays[T DB](db T, theCase int, sqlStatement string, sqlParams ...an
 	for rows.Next() {
 		result := make([]any, lenCols)
 		rows.Scan(dest...)
-		copy(result, rawResult)
+		for i, raw := range rawResult {
+			// faulty mysql driver workaround https://github.com/go-sql-driver/mysql/issues/1401
+			if v, ok := raw.([]byte); ok {
+				value := string(v)
+				switch colTypes[i].DatabaseTypeName() {
+				case "SMALLINT", "MEDIUMINT", "INT", "INTEGER", "BIGINT", "YEAR":
+					raw, _ = strconv.Atoi(value)
+				case "TINYINT", "BOOL", "BOOLEAN", "BIT":
+					raw, _ = strconv.ParseBool(value)
+				case "FLOAT", "DOUBLE", "DECIMAL":
+					raw, _ = strconv.ParseFloat(value, 64)
+				case "DATETIME", "TIMESTAMP":
+					raw, _ = time.Parse("2006-01-02 15:04:05", value)
+				case "DATE":
+					raw, _ = time.Parse("2006-01-02", value)
+				case "TIME":
+					raw, _ = time.Parse("15:04:05", value)
+				case "NULL":
+					raw = nil
+				}
+				raw = value
+			}
+			result[i] = raw
+		}
 		data = append(data, result)
 	}
 	return cols, data, nil
@@ -77,6 +103,7 @@ func QueryToMaps[T DB](db T, theCase int, sqlStatement string, sqlParams ...any)
 	}
 
 	rawResult := make([]any, lenCols)
+	colTypes, _ := rows.ColumnTypes()
 	dest := make([]any, lenCols) // A temporary any slice
 	for i := range rawResult {
 		dest[i] = &rawResult[i] // Put pointers to each string in the interface slice
@@ -85,6 +112,27 @@ func QueryToMaps[T DB](db T, theCase int, sqlStatement string, sqlParams ...any)
 		result := make(map[string]any, lenCols)
 		rows.Scan(dest...)
 		for i, raw := range rawResult {
+			// faulty mysql driver workaround https://github.com/go-sql-driver/mysql/issues/1401
+			if v, ok := raw.([]byte); ok {
+				value := string(v)
+				switch colTypes[i].DatabaseTypeName() {
+				case "SMALLINT", "MEDIUMINT", "INT", "INTEGER", "BIGINT", "YEAR":
+					raw, _ = strconv.Atoi(value)
+				case "TINYINT", "BOOL", "BOOLEAN", "BIT":
+					raw, _ = strconv.ParseBool(value)
+				case "FLOAT", "DOUBLE", "DECIMAL":
+					raw, _ = strconv.ParseFloat(value, 64)
+				case "DATETIME", "TIMESTAMP":
+					raw, _ = time.Parse("2006-01-02 15:04:05", value)
+				case "DATE":
+					raw, _ = time.Parse("2006-01-02", value)
+				case "TIME":
+					raw, _ = time.Parse("15:04:05", value)
+				case "NULL":
+					raw = nil
+				}
+				raw = value
+			}
 			result[cols[i]] = raw
 		}
 		results = append(results, result)
