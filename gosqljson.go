@@ -71,8 +71,9 @@ func QueryToArrays[T DB](db T, theCase int, sqlStatement string, sqlParams ...an
 					raw, _ = time.Parse("15:04:05", value)
 				case "NULL":
 					raw = nil
+				default:
+					raw = value
 				}
-				raw = value
 			}
 			result[i] = raw
 		}
@@ -130,8 +131,9 @@ func QueryToMaps[T DB](db T, theCase int, sqlStatement string, sqlParams ...any)
 					raw, _ = time.Parse("15:04:05", value)
 				case "NULL":
 					raw = nil
+				default:
+					raw = value
 				}
-				raw = value
 			}
 			result[cols[i]] = raw
 		}
