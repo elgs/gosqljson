@@ -3,13 +3,14 @@ package gosqljson
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
 )
 
-var Version = "3"
+const Version = "4"
 
 const (
 	AsIs = iota
@@ -28,7 +29,9 @@ func QueryToArrays[T DB](db T, theCase int, sqlStatement string, sqlParams ...an
 	data := [][]any{}
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
-		fmt.Println("Error executing: ", sqlStatement)
+		if os.Getenv("env") == "dev" {
+			fmt.Println("Error executing: ", sqlStatement)
+		}
 		return []string{}, data, err
 	}
 	cols, _ := rows.Columns()
@@ -87,7 +90,9 @@ func QueryToMaps[T DB](db T, theCase int, sqlStatement string, sqlParams ...any)
 	results := []map[string]any{}
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
-		fmt.Println("Error executing: ", sqlStatement)
+		if os.Getenv("env") == "dev" {
+			fmt.Println("Error executing: ", sqlStatement)
+		}
 		return results, err
 	}
 	cols, _ := rows.Columns()
@@ -145,7 +150,9 @@ func QueryToMaps[T DB](db T, theCase int, sqlStatement string, sqlParams ...any)
 func QueryToStructs[T DB, S any](db T, results *[]S, sqlStatement string, sqlParams ...any) error {
 	rows, err := db.Query(sqlStatement, sqlParams...)
 	if err != nil {
-		fmt.Println("Error executing: ", sqlStatement)
+		if os.Getenv("env") == "dev" {
+			fmt.Println("Error executing: ", sqlStatement)
+		}
 		return err
 	}
 	cols, _ := rows.Columns()
@@ -181,8 +188,10 @@ func QueryToStructs[T DB, S any](db T, results *[]S, sqlStatement string, sqlPar
 func Exec[T DB](db T, sqlStatement string, sqlParams ...any) (map[string]int64, error) {
 	result, err := db.Exec(sqlStatement, sqlParams...)
 	if err != nil {
-		fmt.Println("Error executing: ", sqlStatement)
-		fmt.Println(err)
+		if os.Getenv("env") == "dev" {
+			fmt.Println("Error executing: ", sqlStatement)
+			fmt.Println(err)
+		}
 		return nil, err
 	}
 	rowsffected, err := result.RowsAffected()
