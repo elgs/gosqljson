@@ -58,7 +58,7 @@ func main() {
 	// map: [map[ID:1 NAME:Alpha] map[ID:2 NAME:Beta]]
 
 	resultStructs := []User{}
-	_ = gosqljson.QueryToStructs(db, &resultStructs, "SELECT  NAME,ID FROM test WHERE ID > ?", 0)
+	_ = gosqljson.QueryToStructs(db, &resultStructs, "SELECT NAME,ID FROM test WHERE ID > ?", 0)
 	fmt.Printf("structs: %+v\n", resultStructs)
 	// structs: [{Id:1 Name:Alpha} {Id:2 Name:Beta} {Id:3 Name:Gamma}]
 }
