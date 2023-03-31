@@ -58,7 +58,7 @@ func TestAll(t *testing.T) {
 	fmt.Printf("maps: %+v\n", resultMaps)
 
 	resultStructs := []Test{}
-	err = QueryToStructs(db, &resultStructs, "SELECT  NAME,ID FROM test WHERE ID > ?", 0)
+	err = QueryToStructs(db, &resultStructs, "SELECT NAME,ID FROM test WHERE ID > ?", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
