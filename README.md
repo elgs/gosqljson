@@ -1,3 +1,7 @@
+# Deprecated
+
+This project is deprecated. Please use [https://github.com/elgs/gosqlcrud](https://github.com/elgs/gosqlcrud) instead.
+
 # gosqljson
 
 A Go library to work with SQL database using standard `database/sql` api. It provides a set of functions to convert query result to array, map and struct.
